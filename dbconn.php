@@ -1,5 +1,5 @@
 <?php
-$host = '68.178.151.242';
+$host = 'localhost';
 $dbname = 'order';
 $username = 'root';
 $password = '';
