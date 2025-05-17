@@ -1,0 +1,278 @@
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Product App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MainScreen(),
+    );
+  }
+}
+
+// MainScreen handles bottom navigation
+class MainScreen extends StatefulWidget {
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    ProductRegistrationPage(),
+    ProductInfoPage(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_box),
+            label: 'Register',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Products',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Product Registration Page
+class ProductRegistrationPage extends StatefulWidget {
+  @override
+  _ProductRegistrationPageState createState() =>
+      _ProductRegistrationPageState();
+}
+
+class _ProductRegistrationPageState extends State<ProductRegistrationPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _stockQuantityController =
+      TextEditingController();
+  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _imageURLController = TextEditingController();
+
+  Future<void> registerProduct() async {
+    if (_formKey.currentState!.validate()) {
+      final Map<String, dynamic> data = {
+        'name': _nameController.text,
+        'description': _descriptionController.text,
+        'price': _priceController.text,
+        'stockQuantity': _stockQuantityController.text,
+        'category': _categoryController.text,
+        'imageURL': _imageURLController.text,
+      };
+
+      try {
+        final response = await http.post(
+          Uri.parse(
+              'http://localhost:80/GET_POST/products_API.php?action=product_registration'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(data),
+        );
+
+        final responseData = json.decode(response.body);
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text(responseData['success'] ?? responseData['error'])),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Server error: ${response.statusCode}')),
+          );
+        }
+      } catch (error) {
+        print('Error: $error');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error occurred. Please try again.')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Product Registration')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(labelText: 'Name'),
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a name' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(labelText: 'Description'),
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a description' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _priceController,
+                  decoration: InputDecoration(labelText: 'Price'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a price' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _stockQuantityController,
+                  decoration: InputDecoration(labelText: 'Stock Quantity'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter stock quantity' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _categoryController,
+                  decoration: InputDecoration(labelText: 'Category'),
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a category' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _imageURLController,
+                  decoration: InputDecoration(labelText: 'Image URL'),
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter an image URL' : null,
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: registerProduct,
+                  child: Text('Register Product'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Product Info Page
+class ProductInfoPage extends StatefulWidget {
+  @override
+  _ProductInfoPageState createState() => _ProductInfoPageState();
+}
+
+class _ProductInfoPageState extends State<ProductInfoPage> {
+  List<dynamic> products = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
+  }
+
+  Future<void> fetchProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'http://localhost:80/GET_POST/products_API.php?action=all_products'),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          products = json.decode(response.body);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load products');
+      }
+    } catch (error) {
+      print('Error fetching products: $error');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('All Products')),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              padding: EdgeInsets.all(16.0),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return Card(
+                  margin: EdgeInsets.only(bottom: 16.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product['Name'] ?? 'No Name',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 8),
+                        Text('Description: ${product['Description'] ?? ''}'),
+                        Text('Price: \$${product['Price'] ?? ''}'),
+                        Text(
+                            'Stock Quantity: ${product['StockQuantity'] ?? ''}'),
+                        Text('Category: ${product['Category'] ?? ''}'),
+                        if (product['ImageURL'] != null &&
+                            product['ImageURL'].toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10.0),
+                            child: Image.network(
+                              product['ImageURL'],
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(Icons.broken_image),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}

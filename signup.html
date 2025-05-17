@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up</title>
+</head>
+<body>
+    <h2>Sign Up</h2>
+    <form action="signup.php" method="POST">
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label>Phone:</label><br>
+        <input type="text" name="phone" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <label>Role:</label><br>
+        <select name="role" required>
+            <option value="buyer">Buyer</option>
+            <option value="seller">Seller</option>
+        </select><br><br>
+
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>

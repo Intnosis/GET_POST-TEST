@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Products</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    .product-list {
+        padding: 20px;
+    }
+    .product {
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap; 
+        align-items: flex-start;
+    }
+    .product-details {
+        flex: 0 0 calc(33.33% - 20px); 
+        word-wrap: break-word;
+        padding-right: 20px; 
+    }
+    .product img {
+        flex: 0 0 calc(33.33% - 20px); 
+        height: auto;
+        max-height: 400px; 
+        width: 100%; 
+        margin-bottom: 20px; 
+    }
+</style>
+</head>
+<body>
+<div class="product-list">
+    <h2>All Products</h2>
+    <div id="productsContainer"></div>
+</div>
+
+<script>
+    // Function to fetch all products from the server
+    function getAllProducts() {
+        fetch('http://localhost:80/GET_POST/products_API.php?action=all_products')
+            .then(response => response.json())
+            .then(data => {
+                // Call function to display products
+                displayProducts(data);
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+            });
+    }
+
+    // Function to display products dynamically
+    function displayProducts(products) {
+    const productsContainer = document.getElementById('productsContainer');
+    const baseUrl = 'http://yourdomain.com/images/';  // Correct path to the images
+
+    products.forEach(product => {
+        const productDiv = document.createElement('div');
+        productDiv.classList.add('product');
+
+        const productDetailsDiv = document.createElement('div');
+        productDetailsDiv.classList.add('product-details');
+        productDetailsDiv.innerHTML = `
+            <h3>${product.name}</h3>
+            <p>Price: $${product.price}</p>
+            <p>Stock Quantity: ${product.quantity}</p>
+            <p>End date: ${product.enddate}</p>
+            <p>Category: ${product.category}</p>
+        `;
+        productDiv.appendChild(productDetailsDiv);
+
+        // Check if image URL is present and display the image
+        const imageUrl = product.image.startsWith('http') ? product.image : baseUrl + product.image;
+
+        if (imageUrl) {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = product.name;
+            img.style.maxWidth = '300px'; // Optional: Control image size
+            img.style.height = 'auto';    // Optional: Maintain aspect ratio
+            productDiv.appendChild(img);
+        }
+
+        productsContainer.appendChild(productDiv);
+    });
+}
+
+
+
+    // Call function to fetch products when the page loads
+    window.onload = getAllProducts;
+</script>
+</body>
+</html>

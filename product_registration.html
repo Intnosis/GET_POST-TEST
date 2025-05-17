@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Registration</title>
+<script>
+    function registerProduct() {
+        // Get form values
+        var name = document.getElementById('name').value;
+        //var description = document.getElementById('description').value;
+        var price = document.getElementById('price').value;
+        var quantity = document.getElementById('quantity').value;
+        var enddate = document.getElementById('enddate').value;
+        var image = document.getElementById('image').value;
+        var category = document.getElementById('category').value;
+        // Create data object
+        var data = {
+            name: name,
+            //description: description,
+            price: price,
+            quantity: quantity,
+            enddate: enddate,
+            image: image,
+            category: category
+        };
+        
+        // Send data to backend
+        fetch('http://localhost:80/GET_POST/products_API.php?action=product_registration', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle response
+            console.log(data);
+            alert(data.success || data.error);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error occurred. Please try again.');
+        });
+    }
+</script>
+</head>
+<body>
+<h2>Product Registration</h2>
+<form onsubmit="event.preventDefault(); registerProduct()">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required><br><br>
+    
+    <label for="price">Price:</label>
+    <input type="number" id="price" name="price" required><br><br>
+    
+    <label for="quantity">quantity:</label>
+    <input type="number" id="quantity" name="quantity" required><br><br>
+    
+    <label for="enddate">enddate</label>
+    <input type="text" id="enddate" name="enddate" required><br><br>
+    
+    <label for="image">Image:</label>
+    <input type="text" id="image" name="image" required><br><br>
+
+    <label for="category">Category:</label>
+    <input type="text" id="category" name="category" required><br><br>
+    
+    <button type="submit">Register Product</button>
+</form>
+</body>
+</html>

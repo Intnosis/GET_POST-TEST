@@ -1,0 +1,56 @@
+<?php
+require 'db.php';
+
+// Try to fetch users
+try {
+    $users = $conn->query("SELECT * FROM users")->fetchAll();
+    $orders = $conn->query("SELECT * FROM orders")->fetchAll();
+} catch (PDOException $e) {
+    die("Query failed: " . $e->getMessage());
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Test</title>
+</head>
+<body>
+    <h2>✅ Backend Connection Test</h2>
+    <p>If you see users and orders below, your backend is working properly.</p>
+
+    <h3>👤 Users Table</h3>
+    <?php if ($users): ?>
+        <table border="1" cellpadding="5">
+            <tr><th>ID</th><th>Username</th><th>Email</th><th>Created At</th></tr>
+            <?php foreach ($users as $user): ?>
+                <tr>
+                    <td><?= $user['id'] ?></td>
+                    <td><?= $user['username'] ?></td>
+                    <td><?= $user['email'] ?></td>
+                    <td><?= $user['created_at'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    <?php else: ?>
+        <p>No users found.</p>
+    <?php endif; ?>
+
+    <h3>🛒 Orders Table</h3>
+    <?php if ($orders): ?>
+        <table border="1" cellpadding="5">
+            <tr><th>Order ID</th><th>User ID</th><th>Date</th><th>Status</th><th>Total</th></tr>
+            <?php foreach ($orders as $order): ?>
+                <tr>
+                    <td><?= $order['id'] ?></td>
+                    <td><?= $order['user_id'] ?></td>
+                    <td><?= $order['order_date'] ?></td>
+                    <td><?= $order['status'] ?></td>
+                    <td>$<?= $order['total_amount'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    <?php else: ?>
+        <p>No orders found.</p>
+    <?php endif; ?>
+</body>
+</html>
